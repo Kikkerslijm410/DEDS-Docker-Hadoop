@@ -25,6 +25,8 @@ services:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
     restart: always
+    depends_on:
+      - namenode
     ports:
       - 9864:9864
       - 9866:9866
@@ -41,6 +43,8 @@ services:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode2
     restart: always
+    depends_on:
+      - namenode
     ports:
       - 9865:9864
       - 9867:9866
@@ -58,6 +62,13 @@ services:
     container_name: resourcemanager
     hostname: resourcemanager
     restart: always
+    depends_on:
+      namenode:
+        condition: service_healthy
+      datanode1:
+        condition: service_started
+      datanode2:
+        condition: service_started
     environment:
       SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
     env_file:
@@ -70,17 +81,28 @@ services:
     container_name: nodemanager
     hostname: nodemanager
     restart: always
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+      - jupyter
     environment:
       SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
     env_file:
       - ./hadoop.env
     networks:
       hadoop_network:
+
   historyserver:
     image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
     container_name: historyserver
     hostname: historyserver
     restart: always
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+      - jupyter
     environment:
       SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
     volumes:
@@ -89,8 +111,9 @@ services:
       - ./hadoop.env
     networks:
       hadoop_network:
+
   jupyter:
-    image: jupyter/all-spark-notebook
+    image: jupyter/all-spark-notebook:latest
     container_name: jupyter
     restart: always
     ports:
@@ -103,6 +126,8 @@ services:
       - NotebookApp.token=
     networks:
       hadoop_network:
+
+
 volumes:
   hadoop_namenode:
   hadoop_datanode:
