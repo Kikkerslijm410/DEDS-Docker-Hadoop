@@ -42,3 +42,11 @@ woord:
 clearwoord:
 	docker exec -it namenode hdfs dfs -rm -r /output
 	docker exec -it namenode hdfs dfs -rm -r /input
+
+custom:
+	docker build -t hadoop-scraper ./scraper
+	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -mkdir -p /data/
+	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -copyFromLocal /scraper/ /data/
+	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper
+customclean:
+	docker exec -it namenode hdfs dfs -rm -r /data
