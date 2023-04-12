@@ -44,6 +44,15 @@ clearwoord:
 	docker exec -it namenode hdfs dfs -rm -r /input
 
 custom:
+	docker-compose up -d
+	py ../Scrapers/Bever/BeverBot.py
+	powershell cp ../Scrapers/Bever/output ./scraper/input/ -Recurse
+	docker build -t hadoop-scraper ./scraper
+	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -mkdir -p /data/
+	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -copyFromLocal /scraper/ /data/
+	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper
+
+customHadoopOnly:
 	docker build -t hadoop-scraper ./scraper
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -mkdir -p /data/
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -copyFromLocal /scraper/ /data/
