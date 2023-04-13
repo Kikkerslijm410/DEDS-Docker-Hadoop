@@ -1,4 +1,4 @@
-DOCKER_NETWORK = hadoop_hadoop_network
+DOCKER_NETWORK = docker-hadoop_hadoop_network
 ENV_FILE = hadoop.env
 current_branch = master
 CLASS_TO_RUN = WordCount
@@ -23,6 +23,7 @@ wordcount:
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-wordcount hdfs dfs -cat /output/*
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-wordcount hdfs dfs -rm -r /output
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-wordcount hdfs dfs -rm -r /input
+
 clear:
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-wordcount hdfs dfs -rm -r /output
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-wordcount hdfs dfs -rm -r /input
@@ -39,14 +40,13 @@ woord:
 	docker exec -it namenode hdfs dfs -cat /output/*
 	docker exec -it namenode hdfs dfs -rm -r /output
 	docker exec -it namenode hdfs dfs -rm -r /input
+
 clearwoord:
 	docker exec -it namenode hdfs dfs -rm -r /output
 	docker exec -it namenode hdfs dfs -rm -r /input
 
 custom:
 	docker-compose up -d
-	py ../Scrapers/Bever/BeverBot.py
-	powershell cp ../Scrapers/Bever/output ./scraper/input/ -Recurse
 	docker build -t hadoop-scraper ./scraper
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -mkdir -p /data/
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -copyFromLocal /scraper/ /data/
@@ -57,5 +57,6 @@ customHadoopOnly:
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -mkdir -p /data/
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper hdfs dfs -copyFromLocal /scraper/ /data/
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} hadoop-scraper
+
 customclean:
 	docker exec -it namenode hdfs dfs -rm -r /data
